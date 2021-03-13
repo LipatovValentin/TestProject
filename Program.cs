@@ -79,6 +79,10 @@ namespace TestProject
         private int _version;
         internal EnumeratorWithNode(QueueWithNode<T> queue)
         {
+            if (queue == null)
+            {
+                throw new ArgumentNullException(nameof(queue));
+            }
             _queue = queue;
             _version = _queue.Version;
             _current = null;
@@ -92,10 +96,6 @@ namespace TestProject
             if (_version != _queue.Version)
             {
                 throw new InvalidOperationException();
-            }
-            if (_queue == null)
-            {
-                return false;
             }
             if (_queue.Head == null)
             {
@@ -244,6 +244,7 @@ namespace TestProject
         private int _version;
         internal Enumerator(Queue<T> queue)
         {
+
             _queue = queue;
             _index = -1;
             _version = _queue.Version;
