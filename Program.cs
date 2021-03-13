@@ -17,19 +17,22 @@ namespace TestProject
         private int _tail;
         private int _size;
         private int _version;
-        public Queue()
-        {
-            _array = new T[0];
-        }
+        public int Head { get => _head; }
+        public int Tail { get => _tail; }
+        public int Count { get => _size; }
+        public int Version { get => _version; }
+        public Queue() : this(new T[0]) { }
         public Queue(IEnumerable<T> collection)
         {
             if (collection == null)
             {
                 throw new ArgumentNullException(nameof(collection));
             }
-            _array = new T[4];
+            _array = new T[0];
             _size = 0;
             _version = 0;
+            _tail = 0;
+            _head = 0;
             foreach (T obj in collection)
             {
                 Enqueue(obj);
@@ -37,35 +40,17 @@ namespace TestProject
         }
         public T GetElement(int index)
         {
-            return _array[(_head + index) % _array.Length];
-        }
-        public int Count
-        {
-            get
+            if (_array == null)
             {
-                return _size;
+                throw new InvalidOperationException();
             }
-        }
-        public int Version
-        {
-            get
-            {
-                return _version;
-            }
+            return _array[_head + index];
         }
         public void Enqueue(T item)
         {
-            if (_size == _array.Length)
-            {
-                int capacity = (int)((long)_array.Length * 200L / 100L);
-                if (capacity < _array.Length + 4)
-                {
-                    capacity = _array.Length + 4;
-                }
-                SetCapacity(capacity);
-            }
+            SetCapacity(_array.Length + 1);
             _array[_tail] = item;
-            _tail = (_tail + 1) % _array.Length;
+            _tail = _tail + 1;
             _size = _size + 1;
             _version = _version + 1;
         }
@@ -77,7 +62,7 @@ namespace TestProject
             }
             T obj = _array[_head];
             _array[_head] = default(T);
-            _head = (_head + 1) % _array.Length;
+            _head = _head + 1;
             _size = _size - 1;
             _version = _version + 1;
             return obj;
@@ -111,7 +96,6 @@ namespace TestProject
             return new Enumerator<T>(this);
         }
     }
-
     public struct Enumerator<T> : IEnumerator<T>, IDisposable, IEnumerator
     {
         private Queue<T> _queue;
@@ -136,21 +120,17 @@ namespace TestProject
             {
                 throw new InvalidOperationException();
             }
-
             if (_index == -2)
             {
                 return false;
             }
-
             _index = _index + 1;
-
             if (_index == _queue.Count)
             {
                 _index = -2;
                 _current = default(T);
                 return false;
             }
-
             _current = _queue.GetElement(_index);
             return true;
         }
@@ -173,7 +153,7 @@ namespace TestProject
                 {
                     throw new InvalidOperationException();
                 }
-                return (object) _current;
+                return (object)_current;
             }
         }
         void IEnumerator.Reset()
