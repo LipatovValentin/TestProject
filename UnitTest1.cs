@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,7 @@ namespace TestProject
     public class UnitTest1
     {
 
-        private IQueue<T> InitQueue<T>() => new Queue<T>(); //Add queue 
+        private IQueue<T> InitQueue<T>() => new QueueWithNode<T>(); //Add queue 
 
 
         [Fact]
