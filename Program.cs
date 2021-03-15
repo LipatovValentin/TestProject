@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace TestProject
 {
-        public interface IQueue<T> : IEnumerable<T>
+    public interface IQueue<T> : IEnumerable<T>
     {
         T Dequeue();
         void Enqueue(T item);
