@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace TestProject
 {
-    public interface IQueue<T> : IEnumerable<T>
+        public interface IQueue<T> : IEnumerable<T>
     {
         T Dequeue();
         void Enqueue(T item);
@@ -22,38 +22,51 @@ namespace TestProject
     public class QueueWithNode<T> : IQueue<T>
     {
         private Node<T> _head;
-        private Node<T> _tail;
         private int _count;
         private int _version;
-        public Node<T> Head { get => _head; }
-        public Node<T> Tail { get => _tail; }
-        public int Count { get => _count; }
-        public int Version { get => _version; }
+        public Node<T> Head 
+        {
+            get
+            {
+                return _head;
+            }
+        } 
+        public int Count 
+        { 
+            get 
+            { 
+                return _count;
+            }
+        }
+        public int Version
+        {
+            get
+            {
+               return _version;
+            }
+        }
         public QueueWithNode()
         {
             _head = null;
-            _tail = null;
             _count = 0;
             _version = 0;
         }
         public void Enqueue(T item)
         {
-            Node<T> tempNode = _tail;
-            _tail = new Node<T>(item);
-            if (_count == 0 || _head == null)
+            if (_head == null)
             {
-                _head = _tail;
+                _head = new Node<T>(item);
             }
             else
             {
-                tempNode.Next = _tail;
+                GetLast(_head).Next = new Node<T>(item);
             }
             _count = _count + 1;
             _version = _version + 1;
         }
         public T Dequeue()
         {
-            if (_count == 0 || _head == null)
+            if (_head == null)
             {
                 throw new InvalidOperationException();
             }
@@ -62,6 +75,21 @@ namespace TestProject
             _count = _count - 1;
             _version = _version + 1;
             return obj;
+        }
+        private Node<T> GetLast(Node<T> node)
+        {
+            if (node == null)
+            {
+                throw new InvalidOperationException();
+            }
+            if (node.Next == null)
+            {
+                return node;
+            }
+            else
+            {
+                return GetLast(node.Next);
+            }
         }
         IEnumerator IEnumerable.GetEnumerator()
         {
@@ -81,7 +109,7 @@ namespace TestProject
         {
             if (queue == null)
             {
-                throw new ArgumentNullException(nameof(queue));
+                throw new ArgumentNullException();
             }
             _queue = queue;
             _version = _queue.Version;
@@ -155,28 +183,43 @@ namespace TestProject
         private T[] _array;
         private int _head;
         private int _tail;
-        private int _size;
+        private int _count;
         private int _version;
-        public int Head { get => _head; }
-        public int Tail { get => _tail; }
-        public int Count { get => _size; }
-        public int Version { get => _version; }
-        public Queue() : this(new T[0]) { }
-        public Queue(IEnumerable<T> collection)
-        {
-            if (collection == null)
+        public int Head 
+        { 
+            get
             {
-                throw new ArgumentNullException(nameof(collection));
+                return _head; 
             }
+        }
+        public int Tail 
+        { 
+            get 
+            {
+                return _tail;
+            }
+        }
+        public int Count 
+        { 
+            get
+            {
+                return _count; 
+            }
+        }
+        public int Version 
+        { 
+            get 
+            {
+                return _version; 
+            }
+        }
+        public Queue()
+        {
             _array = new T[0];
-            _size = 0;
+            _count = 0;
             _version = 0;
             _tail = 0;
             _head = 0;
-            foreach (T obj in collection)
-            {
-                Enqueue(obj);
-            }
         }
         public T GetElement(int index)
         {
@@ -184,37 +227,44 @@ namespace TestProject
             {
                 throw new InvalidOperationException();
             }
-            return _array[_head + index];
+            return _array[(_head + index) % _array.Length];
         }
         public void Enqueue(T item)
         {
-            SetCapacity(_array.Length + 1);
+            if (_array == null || _array.Length == 0)
+            {
+                SetCapacity(2);
+            }
+            if (_count == _array.Length)
+            {
+                SetCapacity(_array.Length * 2);
+            }
             _array[_tail] = item;
-            _tail = _tail + 1;
-            _size = _size + 1;
+            _tail = (_tail + 1) % _array.Length;
+            _count = _count + 1;
             _version = _version + 1;
         }
         public T Dequeue()
         {
-            if (_size == 0)
+            if (_count == 0 || _array == null || _array.Length == 0)
             {
                 throw new InvalidOperationException();
             }
-            T obj = _array[_head];
+            T obj = this._array[this._head];
             _array[_head] = default(T);
-            _head = _head + 1;
-            _size = _size - 1;
+            _head = (_head + 1) % _array.Length;
+            _count = _count - 1;
             _version = _version + 1;
             return obj;
         }
         private void SetCapacity(int capacity)
         {
             T[] objArray = new T[capacity];
-            if (_size > 0)
+            if (_count > 0)
             {
                 if (_head < _tail)
                 {
-                    Array.Copy(_array, _head, objArray, 0, _size);
+                    Array.Copy(_array, _head, objArray, 0, _count);
                 }
                 else
                 {
@@ -224,7 +274,7 @@ namespace TestProject
             }
             _array = objArray;
             _head = 0;
-            _tail = _size == capacity ? 0 : _size;
+            _tail = _count == capacity ? 0 : _count;
             _version = _version + 1;
         }
         IEnumerator IEnumerable.GetEnumerator()
